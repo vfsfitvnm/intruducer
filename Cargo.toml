@@ -1,0 +1,10 @@
+[package]
+name = "intruducer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+goblin = { version = "0.4.3", features = ["elf32", "elf64"] }
+
+[dev-dependencies]
+structopt = "0.3"
