@@ -3,4 +3,10 @@ name = "tiny_asm"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+x86 = []
+x86_64 = []
+arm = []
+arm64 = []
+
 [dependencies]

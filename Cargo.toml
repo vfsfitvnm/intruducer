@@ -5,7 +5,18 @@ edition = "2021"
 
 [dependencies]
 goblin = { version = "0.4.3", features = ["elf32", "elf64"] }
-tiny_asm = { version = "*", path = "./tiny_asm" }
+
+[target.'cfg(target_arch = "x86")'.dependencies] 
+tiny_asm = { version = "*", path = "./tiny_asm", features = ["x86"] }
+
+[target.'cfg(target_arch = "x86_64")'.dependencies] 
+tiny_asm = { version = "*", path = "./tiny_asm", features = ["x86", "x86_64"] }
+
+[target.'cfg(target_arch = "arm")'.dependencies] 
+tiny_asm = { version = "*", path = "./tiny_asm", features = ["arm"] }
+
+[target.'cfg(target_arch = "aarch64")'.dependencies] 
+tiny_asm = { version = "*", path = "./tiny_asm", features = ["arm", "arm64"] }
 
 [dev-dependencies]
 structopt = "0.3"
