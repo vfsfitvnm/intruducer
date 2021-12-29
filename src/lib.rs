@@ -128,7 +128,7 @@ fn _intruduce(proc: Proc, lib_path: PathBuf, stage_path: PathBuf) -> Result<(), 
     Ok(())
 }
 
-// TODO: wait for Rust 1.57
+// TODO: wait for https://github.com/rust-lang/rust/issues/88989
 fn change_owner(path: &str, uid: Uid, gid: Gid) -> Option<()> {
     use std::{
         ffi::CString,
