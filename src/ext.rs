@@ -17,7 +17,10 @@ use goblin::{
     strtab::Strtab,
 };
 
-use crate::{Error, VirtAddr, proc::{Proc, ProcClass, ProcLib, ProcSym}};
+use crate::{
+    proc::{Proc, ProcClass, ProcLib, ProcSym},
+    Error, VirtAddr,
+};
 
 /// A extension trait for [`PathBuf`].
 pub(crate) trait PathBufExt {
@@ -233,7 +236,6 @@ impl ProcIntruducerExt for Proc {
             .ok_or(Error::InstructionPointerNotFound)
     }
 }
-
 
 #[cfg(target_os = "linux")]
 const DLOPEN_SYM_NAME: &str = "__libc_dlopen_mode";

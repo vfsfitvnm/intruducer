@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-#[cfg(feature = "x86")]
-pub mod x86;
-#[cfg(feature = "x86_64")]
-pub mod x86_64;
 #[cfg(feature = "arm")]
 pub mod arm;
 #[cfg(feature = "arm64")]
 pub mod arm64;
+#[cfg(feature = "x86")]
+pub mod x86;
+#[cfg(feature = "x86_64")]
+pub mod x86_64;
 
 /// Holds the relevant basic stuff to perform intructions encoding and relocations.
 /// Every instruction is encoded immediately and pushed into the buffer. If it contains
