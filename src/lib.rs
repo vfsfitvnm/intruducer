@@ -9,7 +9,6 @@ use std::path::PathBuf;
 
 mod ext;
 mod proc;
-mod tiny_asm;
 mod utils;
 
 use crate::ext::ProcExt;

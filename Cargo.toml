@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 goblin = { version = "0.4.3", features = ["elf32", "elf64"] }
+tiny_asm = { version = "*", path = "./tiny_asm" }
 
 [dev-dependencies]
 structopt = "0.3"

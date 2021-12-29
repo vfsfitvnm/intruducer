@@ -1,4 +1,3 @@
-use crate::tiny_asm::{self};
 use crate::{
     proc::{ProcClass, ProcSym},
     VirtAddr,

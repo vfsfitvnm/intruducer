@@ -64,7 +64,7 @@ pub enum AddrMode2 {
     PostIndexed,
 }
 
-pub(crate) enum Op {
+pub enum Op {
     Adri(Reg, i32),
     Adrl(Reg, Label),
     Blr(Reg),
@@ -275,4 +275,4 @@ impl Shl<u32> for Shift {
     }
 }
 
-pub(crate) type TinyAsm = super::TinyAsm<Op, 4>;
+pub type TinyAsm = super::TinyAsm<Op, 4>;

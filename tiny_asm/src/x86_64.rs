@@ -2,7 +2,7 @@ use std::{collections::HashMap, mem::size_of};
 
 use super::{Encodable, Label};
 
-pub(crate) enum Op {
+pub enum Op {
     PlaceHolder,
     Refl(Label),
 }
@@ -22,16 +22,16 @@ impl Encodable<4> for Op {
 }
 
 impl TinyAsm {
-    pub(crate) fn instr<const T: usize>(mut self, bytes: [u8; T]) -> Self {
+    pub fn instr<const T: usize>(mut self, bytes: [u8; T]) -> Self {
         self.buf.extend(bytes);
         self
     }
 
-    pub(crate) fn instr_with_ref<const T: usize>(mut self, bytes: [u8; T], label: Label) -> Self {
+    pub fn instr_with_ref<const T: usize>(mut self, bytes: [u8; T], label: Label) -> Self {
         self.buf.extend(bytes);
         self.relocs.push((self.buf.len(), Op::Refl(label)));
         self.op(Op::PlaceHolder)
     }
 }
 
-pub(crate) type TinyAsm = super::TinyAsm<Op, 4>;
+pub type TinyAsm = super::TinyAsm<Op, 4>;
