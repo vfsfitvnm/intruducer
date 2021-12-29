@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use super::{Encodable, Label};
 
 pub enum Op {
-    Ref(Label),
     Placeholder,
+    Ref(Label),
 }
 
 impl Encodable<4> for Op {
