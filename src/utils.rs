@@ -3,14 +3,14 @@ use crate::{
     VirtAddr,
 };
 
-pub(crate) fn shell_code(class: &ProcClass, stage_path: &str) -> Vec<u8> {
+pub(crate) fn first_payload(class: &ProcClass, second_payload_path: &str) -> Vec<u8> {
     match class {
-        ProcClass::ThirtyTwo => shell_code_32(stage_path),
-        ProcClass::SixtyFour => shell_code_64(stage_path),
+        ProcClass::ThirtyTwo => first_payload_32(second_payload_path),
+        ProcClass::SixtyFour => first_payload_64(second_payload_path),
     }
 }
 
-pub(crate) fn stage_code(
+pub(crate) fn second_payload(
     class: &ProcClass,
     original_code: &[u8],
     original_ip: VirtAddr,
@@ -18,13 +18,13 @@ pub(crate) fn stage_code(
     dlopen: &ProcSym,
 ) -> Vec<u8> {
     match class {
-        ProcClass::ThirtyTwo => stage_code_32(original_code, original_ip, lib_path, dlopen),
-        ProcClass::SixtyFour => stage_code_64(original_code, original_ip, lib_path, dlopen),
+        ProcClass::ThirtyTwo => second_payload_32(original_code, original_ip, lib_path, dlopen),
+        ProcClass::SixtyFour => second_payload_64(original_code, original_ip, lib_path, dlopen),
     }
 }
 
 #[cfg(target_arch = "x86_64")]
-fn shell_code_64(stage_path: &str) -> Vec<u8> {
+fn first_payload_64(second_payload_path: &str) -> Vec<u8> {
     use tiny_asm::x86_64::TinyAsm;
 
     TinyAsm::new()
@@ -62,12 +62,12 @@ fn shell_code_64(stage_path: &str) -> Vec<u8> {
         // push r15
         .instr([0x41, 0x57])
         //
-        // Open stage file
+        // Open second payload file
         //
         // mov rax, 2
         .instr([0x48, 0xc7, 0xc0, 0x02, 0x00, 0x00, 0x00])
-        // lea rdi, [rip + stage_path]
-        .instr_with_ref([0x48, 0x8d, 0x3d], "stage_path")
+        // lea rdi, [rip + second_payload_path]
+        .instr_with_ref([0x48, 0x8d, 0x3d], "second_payload_path")
         // mov rsi, 0
         .instr([0x48, 0xc7, 0xc6, 0x00, 0x00, 0x00, 0x00])
         // mov rdx, 0
@@ -75,12 +75,12 @@ fn shell_code_64(stage_path: &str) -> Vec<u8> {
         // syscall
         .instr([0x0f, 0x05])
         //
-        // Stage file descriptor
+        // Second payload file descriptor
         //
         // mov r14, rax
         .instr([0x49, 0x89, 0xc6])
         //
-        // Map the stage file to memory
+        // Map the Second payload file to memory
         //
         // mov rax, 9
         .instr([0x48, 0xc7, 0xc0, 0x09, 0x00, 0x00, 0x00])
@@ -99,12 +99,12 @@ fn shell_code_64(stage_path: &str) -> Vec<u8> {
         // syscall
         .instr([0x0f, 0x05])
         //
-        // Stage code virtual address
+        // Second payload code virtual address
         //
         // mov r15, rax
         .instr([0x49, 0x89, 0xc7])
         //
-        // Close stage file
+        // Close Second payload file
         //
         // mov rax, 3
         .instr([0x48, 0xc7, 0xc0, 0x03, 0x00, 0x00, 0x00])
@@ -113,30 +113,30 @@ fn shell_code_64(stage_path: &str) -> Vec<u8> {
         // syscall
         .instr([0x0f, 0x05])
         //
-        // Delete stage file.
+        // Delete Second payload file.
         // Will fail on Android apps.
         //
         // mov rax, 87
         .instr([0x48, 0xc7, 0xc0, 0x57, 0x00, 0x00, 0x00])
-        // lea rdi, [rip + stage_path]
-        .instr_with_ref([0x48, 0x8d, 0x3d], "stage_path")
+        // lea rdi, [rip + second_payload_path]
+        .instr_with_ref([0x48, 0x8d, 0x3d], "second_payload_path")
         // syscall
         .instr([0x0f, 0x05])
         //
-        // Execute stage code.
+        // Execute second payload code.
         //
         // jmp r15
         .instr([0x41, 0xff, 0xe7])
         //
         // Data
         //
-        .label("stage_path")
-        .asciiz(stage_path)
+        .label("second_payload_path")
+        .asciiz(second_payload_path)
         .build()
 }
 
 #[cfg(target_arch = "x86_64")]
-fn stage_code_64(
+fn second_payload_64(
     original_code: &[u8],
     original_ip: VirtAddr,
     lib_path: &str,
@@ -265,7 +265,7 @@ fn stage_code_64(
 }
 
 #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
-fn shell_code_32(stage_path: &str) -> Vec<u8> {
+fn first_payload_32(second_payload_path: &str) -> Vec<u8> {
     use tiny_asm::x86::TinyAsm;
 
     TinyAsm::new()
@@ -287,7 +287,7 @@ fn shell_code_32(stage_path: &str) -> Vec<u8> {
         // push edi
         .instr([0x57])
         //
-        // Open stage file.
+        // Open second payload file.
         //
         // mov eax, 5
         .instr([0xb8, 0x05, 0x00, 0x00, 0x00])
@@ -298,8 +298,8 @@ fn shell_code_32(stage_path: &str) -> Vec<u8> {
         .instr([0x5b])
         // sub ebx, next1
         .instr_with_ref([0x81, 0xeb], "next1")
-        // add ebx, stage_path
-        .instr_with_ref([0x81, 0xc3], "stage_path")
+        // add ebx, second_payload_path
+        .instr_with_ref([0x81, 0xc3], "second_payload_path")
         // mov ecx, 0
         .instr([0xb9, 0x00, 0x00, 0x00, 0x00])
         // mov edx, 0
@@ -307,12 +307,12 @@ fn shell_code_32(stage_path: &str) -> Vec<u8> {
         // int 0x80
         .instr([0xcd, 0x80])
         //
-        // Stage file descriptor.
+        // Second payload file descriptor.
         //
         // mov edi, eax
         .instr([0x89, 0xc7])
         //
-        // Map the stage file to memory.
+        // Map the Second payload file to memory.
         //
         // mov eax, 192
         .instr([0xb8, 0xc0, 0x00, 0x00, 0x00])
@@ -329,12 +329,12 @@ fn shell_code_32(stage_path: &str) -> Vec<u8> {
         // int 0x80
         .instr([0xcd, 0x80])
         //
-        // Stage code virtual address.
+        // Second payload code virtual address.
         //
         // mov ebp, eax
         .instr([0x89, 0xc5])
         //
-        // Close stage file.
+        // Close Second payload file.
         //
         // mov eax, 6
         .instr([0xb8, 0x06, 0x00, 0x00, 0x00])
@@ -343,7 +343,7 @@ fn shell_code_32(stage_path: &str) -> Vec<u8> {
         // int 0x80
         .instr([0xcd, 0x80])
         //
-        // Delete stage file.
+        // Delete Second payload file.
         // Will fail on Android apps.
         //
         // mov eax, 10
@@ -355,25 +355,25 @@ fn shell_code_32(stage_path: &str) -> Vec<u8> {
         .instr([0x5b])
         // sub ebx, next2
         .instr_with_ref([0x81, 0xeb], "next2")
-        // add ebx, stage_path
-        .instr_with_ref([0x81, 0xc3], "stage_path")
+        // add ebx, second_payload_path
+        .instr_with_ref([0x81, 0xc3], "second_payload_path")
         // int 0x80
         .instr([0xcd, 0x80])
         //
-        // Execute stage code.
+        // Execute second payload code.
         //
         // jmp ebp
         .instr([0xff, 0xe5])
         //
         // Data
         //
-        .label("stage_path")
-        .asciiz(stage_path)
+        .label("second_payload_path")
+        .asciiz(second_payload_path)
         .build()
 }
 
 #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
-fn stage_code_32(
+fn second_payload_32(
     original_code: &[u8],
     original_ip: VirtAddr,
     lib_path: &str,
@@ -511,21 +511,21 @@ fn stage_code_32(
 }
 
 #[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
-fn shell_code_32(stage_path: &str) -> Vec<u8> {
+fn first_payload_32(second_payload_path: &str) -> Vec<u8> {
     use tiny_asm::arm::{Reg::*, TinyAsm};
 
     TinyAsm::new()
         // Push every general purpose register, plus the link register (r14).
         .push([R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, LR])
-        // Open stage file.
+        // Open second payload file.
         .movw(R7, 5)
-        .adrl(R0, "stage_path")
+        .adrl(R0, "second_payload_path")
         .movw(R1, 0)
         .movw(R2, 0)
         .svc(0)
-        // Stage file descriptor.
+        // Second payload file descriptor.
         .movr(R11, R0)
-        // Map the stage file to memory.
+        // Map the Second payload file to memory.
         .movw(R7, 192)
         .movw(R0, 0)
         .movw(R1, 512)
@@ -534,23 +534,23 @@ fn shell_code_32(stage_path: &str) -> Vec<u8> {
         .movr(R4, R11)
         .movw(R5, 0)
         .svc(0)
-        // Stage code virtual address.
+        // Second payload code virtual address.
         .movr(R12, R0)
-        // Close stage file.
+        // Close Second payload file.
         .movw(R7, 6)
         .movr(R0, R11)
         .svc(0)
-        // Execute stage code.
+        // Execute second payload code.
         .movr(PC, R12)
         // Data
-        .label("stage_path")
-        .asciiz(stage_path)
+        .label("second_payload_path")
+        .asciiz(second_payload_path)
         .align::<4>()
         .build()
 }
 
 #[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
-fn stage_code_32(
+fn second_payload_32(
     original_code: &[u8],
     original_ip: VirtAddr,
     lib_path: &str,
@@ -608,7 +608,7 @@ fn stage_code_32(
 }
 
 #[cfg(target_arch = "aarch64")]
-fn shell_code_64(stage_path: &str) -> Vec<u8> {
+fn first_payload_64(second_payload_path: &str) -> Vec<u8> {
     use tiny_asm::arm64::{AddrMode2::PreIndexed, Reg::*, TinyAsm};
 
     TinyAsm::new()
@@ -629,16 +629,16 @@ fn shell_code_64(stage_path: &str) -> Vec<u8> {
         .stp(PreIndexed, X26, X27, SP, -16)
         .stp(PreIndexed, X28, X29, SP, -16)
         .stri(PreIndexed, X30, SP, -16)
-        // Open stage file
+        // Open second payload file
         .movi(X8, 56)
         .movi(X0, 0)
-        .adr(X1, "stage_path")
+        .adr(X1, "second_payload_path")
         .movi(X2, 0)
         .movi(X3, 0)
         .svc(0)
-        // Stage file descriptor
+        // Second payload file descriptor
         .movr(X14, X0)
-        // Map the stage file to memory
+        // Map the Second payload file to memory
         .movi(X8, 222)
         .movi(X0, 0)
         .movi(X1, 256)
@@ -647,23 +647,23 @@ fn shell_code_64(stage_path: &str) -> Vec<u8> {
         .movr(X4, X14)
         .movi(X5, 0)
         .svc(0)
-        // Stage code virtual address
+        // Second payload code virtual address
         .movr(X15, X0)
-        // Close stage file.
+        // Close Second payload file.
         .movi(X8, 57)
         .movr(X0, X14)
         .svc(0)
-        // Execute stage code
+        // Execute second payload code
         .br(X15)
         // Data
-        .label("stage_path")
-        .asciiz(stage_path)
+        .label("second_payload_path")
+        .asciiz(second_payload_path)
         .align::<4>()
         .build()
 }
 
 #[cfg(target_arch = "aarch64")]
-fn stage_code_64(
+fn second_payload_64(
     original_code: &[u8],
     original_ip: VirtAddr,
     lib_path: &str,

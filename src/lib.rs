@@ -15,7 +15,7 @@ use crate::ext::ProcExt;
 use crate::ext::ProcIntruducerExt;
 use crate::proc::Proc;
 use crate::proc::PtraceScope;
-use crate::utils::{shell_code, stage_code};
+use crate::utils::{first_payload, second_payload};
 
 /// Loads a shared library into the target process.
 ///
@@ -57,7 +57,7 @@ pub fn intruduce(id: ProcId, lib_path: PathBuf) -> Result<(), Error> {
     .ok_or(Error::InsufficientPriviliges)?;
 
     #[cfg(target_os = "android")]
-    // Adjusts the library and stage file path in case the target process is an Android application.
+    // Adjusts the library and second payload file path in case the target process is an Android application.
     {
         use crate::ext::ProcAndroidExt;
 
@@ -88,11 +88,11 @@ pub fn intruduce(id: ProcId, lib_path: PathBuf) -> Result<(), Error> {
     _intruduce(proc, lib_path, PathBuf::from(TMP_DIR))
 }
 
-fn _intruduce(proc: Proc, lib_path: PathBuf, stage_path: PathBuf) -> Result<(), Error> {
+fn _intruduce(proc: Proc, lib_path: PathBuf, second_payload_path: PathBuf) -> Result<(), Error> {
     let lib_path = lib_path.canonicalize().unwrap_or(lib_path);
     let lib_path = lib_path.to_str().unwrap();
-    let stage_path = stage_path.join("stage.bin");
-    let stage_path = stage_path.to_str().unwrap();
+    let second_payload_path = second_payload_path.join("payload.bin");
+    let second_payload_path = second_payload_path.to_str().unwrap();
 
     let dlopen = proc.find_dlopen()?;
 
@@ -101,11 +101,11 @@ fn _intruduce(proc: Proc, lib_path: PathBuf, stage_path: PathBuf) -> Result<(), 
 
     let class = proc.class().ok_or(Error::UnsupportedArch)?;
 
-    let shell_code = shell_code(&class, stage_path);
+    let first_payload = first_payload(&class, second_payload_path);
 
     let mem = proc.mem()?;
 
-    let mut original_code = vec![0; shell_code.len()];
+    let mut original_code = vec![0; first_payload.len()];
 
     let ip = proc.find_ip()?;
 
@@ -113,17 +113,17 @@ fn _intruduce(proc: Proc, lib_path: PathBuf, stage_path: PathBuf) -> Result<(), 
     println!("instruction pointer: 0x{:x}", ip);
 
     mem.read_exact_at(&mut original_code, ip)?;
-    mem.write_all_at(&shell_code, ip)?;
+    mem.write_all_at(&first_payload, ip)?;
 
-    let stage_code = stage_code(&class, &original_code, ip, lib_path, &dlopen);
+    let second_payload = second_payload(&class, &original_code, ip, lib_path, &dlopen);
 
-    let mut file = File::create(&stage_path)?;
+    let mut file = File::create(&second_payload_path)?;
 
     let (uid, gid) = proc.owner()?;
 
-    change_owner(stage_path, uid, gid).ok_or(Error::InsufficientPriviliges)?;
+    change_owner(second_payload_path, uid, gid).ok_or(Error::InsufficientPriviliges)?;
 
-    file.write_all(&stage_code)?;
+    file.write_all(&second_payload)?;
 
     Ok(())
 }
