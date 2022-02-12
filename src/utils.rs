@@ -154,8 +154,8 @@ fn stage_code_64(
         .instr_with_ref([0x48, 0x8d, 0x3d], "mem_path")
         // mov rsi, 2
         .instr([0x48, 0xc7, 0xc6, 0x02, 0x00, 0x00, 0x00])
-        // xor rdx, rdx
-        .instr([0x48, 0x31, 0xd2])
+        // mov rdx, 0
+        .instr([0x48, 0xc7, 0xc2, 0x00, 0x00, 0x00, 0x00])
         // syscall
         .instr([0x0f, 0x05])
         //
@@ -197,14 +197,12 @@ fn stage_code_64(
         //
         // Call dlopen
         //
-        // mov rax, [rip + dlopen_addr]
-        .instr_with_ref([0x48, 0x8b, 0x05], "dlopen_addr")
         // lea rdi, [rip + lib_path])
         .instr_with_ref([0x48, 0x8d, 0x3d], "lib_path")
         // mov rsi, 1
         .instr([0x48, 0xc7, 0xc6, 0x01, 0x00, 0x00, 0x00])
-        // call rax
-        .instr([0xff, 0xd0])
+        // call [rip + dlopen_addr]
+        .instr_with_ref([0xff, 0x15], "dlopen_addr")
         //
         // Restore the stack
         //
