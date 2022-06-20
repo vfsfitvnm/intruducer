@@ -2,9 +2,9 @@ use std::thread::sleep;
 use std::time::Duration;
 
 fn main() {
-    println!("I have been intruduced -");
+    println!("Hello -");
     sleep(Duration::from_secs(1));
-    println!("- I'm not joking!");
+    println!("- world!");
 }
 
 #[link_section = ".init_array"]
