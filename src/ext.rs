@@ -221,8 +221,8 @@ impl ProcIntruducerExt for Proc {
             .ok_or(Error::LibraryNotFound(dlopen_lib_name))?;
 
         dlopen_lib
-            .find_sym_addr(DLOPEN_SYM_NAME)
-            .ok_or_else(|| Error::SymbolNotFound(DLOPEN_SYM_NAME.into()))
+            .find_sym_addr(DLOPEN_SYM_NAMES)
+            .ok_or_else(|| Error::SymbolNotFound(DLOPEN_SYM_NAMES.to_vec()))
     }
 
     fn find_ip(&self) -> Result<VirtAddr, Error> {
@@ -238,10 +238,10 @@ impl ProcIntruducerExt for Proc {
 }
 
 #[cfg(target_os = "linux")]
-const DLOPEN_SYM_NAME: &str = "__libc_dlopen_mode";
+const DLOPEN_SYM_NAMES: [&str; 2] = ["__libc_dlopen_mode", "dlopen"];
 
 #[cfg(target_os = "android")]
-const DLOPEN_SYM_NAME: &str = "dlopen";
+const DLOPEN_SYM_NAMES: [&str; 1] = ["dlopen"];
 
 #[cfg(target_os = "linux")]
 fn get_dlopen_lib_name() -> String {

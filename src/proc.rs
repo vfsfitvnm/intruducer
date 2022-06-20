@@ -82,9 +82,11 @@ impl ProcLib {
     /// Finds a symbol with the given `name` exported by the current library.
     ///
     /// Returns [`None`] if no symbol with the given name was found.
-    pub(crate) fn find_sym_addr(&self, name: &str) -> Option<ProcSym> {
+    pub(crate) fn find_sym_addr<const N: usize>(&self, names: [&str; N]) -> Option<ProcSym> {
         let buf = std::fs::read(&self.path).ok()?;
-        let sym = Elf::parse(&buf).ok()?.find_sym_by_name(name)?;
+        let elf = Elf::parse(&buf).ok()?;
+
+        let sym = names.iter().find_map(|name| elf.find_sym_by_name(name))?; 
         Some(ProcSym::new(self.base_addr + sym.st_value))
     }
 }

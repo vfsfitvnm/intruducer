@@ -162,9 +162,9 @@ pub enum Error {
     /// is not found in the `/proc/<id>/maps` file of the target process. This either means that library has not been loaded - which
     /// is kind of impossible - or `/proc/<id>/maps` was improperly parsed.
     LibraryNotFound(String),
-    /// It occurs when `dlopen` symbol name (`__libc_dlopen_mode` on Linux, `dlopen` on Android)
+    /// It occurs when `dlopen` symbol name (`__libc_dlopen_mode`/`dlopen` on Linux, `dlopen` on Android)
     /// was not found in the expected library.
-    SymbolNotFound(String),
+    SymbolNotFound(Vec<&'static str>),
     /// It occurs when the instruction pointer of the target process couldn't be retrieved. This either means there's a lack of priviliges,
     /// `/proc/<id>/syscall` is missing or was improperly parsed, or none of the process thread was blocked when the intruduction
     /// was attempted.
