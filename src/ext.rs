@@ -245,15 +245,19 @@ const DLOPEN_SYM_NAME: &str = "dlopen";
 
 #[cfg(target_os = "linux")]
 fn get_dlopen_lib_name() -> String {
-    use std::{ffi::CStr, os::raw::c_char};
+    BufReader::new(Proc::current().maps().unwrap())
+        .lines()
+        .filter_map(|line| line.ok())
+        .find_map(|line| {
+            let path: PathBuf = line.rsplit_once("    ")?.1.into();
+            let file_name = path.file_name()?.to_str()?;
 
-    #[link(name = "c")]
-    extern "C" {
-        fn gnu_get_libc_version() -> *const c_char;
-    }
-
-    let version = unsafe { CStr::from_ptr(gnu_get_libc_version()).to_str().unwrap() };
-    format!("libc-{}.so", version)
+            if file_name.starts_with("libc.") || file_name.starts_with("libc-") {
+                Some(file_name.to_owned())
+            } else {
+                None
+            }
+        }).unwrap()
 }
 
 #[cfg(target_os = "android")]
