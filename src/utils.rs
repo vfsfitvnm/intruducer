@@ -5,7 +5,9 @@ use crate::{
 
 pub(crate) fn first_payload(class: &ProcClass, second_payload_path: &str) -> Vec<u8> {
     match class {
+        #[cfg(any(target_pointer_width = "64", target_pointer_width = "32"))]
         ProcClass::ThirtyTwo => first_payload_32(second_payload_path),
+        #[cfg(target_pointer_width = "64")]
         ProcClass::SixtyFour => first_payload_64(second_payload_path),
     }
 }
@@ -18,7 +20,9 @@ pub(crate) fn second_payload(
     dlopen: &ProcSym,
 ) -> Vec<u8> {
     match class {
+        #[cfg(any(target_pointer_width = "64", target_pointer_width = "32"))]
         ProcClass::ThirtyTwo => second_payload_32(original_code, original_ip, lib_path, dlopen),
+        #[cfg(target_pointer_width = "64")]
         ProcClass::SixtyFour => second_payload_64(original_code, original_ip, lib_path, dlopen),
     }
 }
