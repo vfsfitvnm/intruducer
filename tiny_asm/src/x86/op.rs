@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::{Encodable, Label};
+use crate::{Encodable, Label};
 
 pub enum Op {
     Placeholder,
@@ -20,18 +20,3 @@ impl Encodable<4> for Op {
         label_offset
     }
 }
-
-impl TinyAsm {
-    pub fn instr<const T: usize>(mut self, bytes: [u8; T]) -> Self {
-        self.buf.extend(bytes);
-        self
-    }
-
-    pub fn instr_with_ref<const T: usize>(mut self, bytes: [u8; T], label: Label) -> Self {
-        self.buf.extend(bytes);
-        self.relocs.push((self.buf.len(), Op::Ref(label)));
-        self.op(Op::Placeholder)
-    }
-}
-
-pub type TinyAsm = super::TinyAsm<Op, 4>;
