@@ -8,14 +8,13 @@ use std::os::unix::prelude::FileExt;
 use std::path::PathBuf;
 
 mod ext;
+mod payloads;
 mod proc;
-mod utils;
 
 use crate::ext::ProcExt;
 use crate::ext::ProcIntruducerExt;
 use crate::proc::Proc;
 use crate::proc::PtraceScope;
-use crate::utils::{first_payload, second_payload};
 
 /// Loads a shared library into the target process.
 ///
@@ -101,7 +100,7 @@ fn _intruduce(proc: Proc, lib_path: PathBuf, second_payload_path: PathBuf) -> Re
 
     let class = proc.class().ok_or(Error::UnsupportedArch)?;
 
-    let first_payload = first_payload(&class, second_payload_path);
+    let first_payload = payloads::gen_first(&class, second_payload_path);
 
     let mem = proc.mem()?;
 
@@ -115,7 +114,7 @@ fn _intruduce(proc: Proc, lib_path: PathBuf, second_payload_path: PathBuf) -> Re
     mem.read_exact_at(&mut original_code, ip)?;
     mem.write_all_at(&first_payload, ip)?;
 
-    let second_payload = second_payload(&class, &original_code, ip, lib_path, &dlopen);
+    let second_payload = payloads::gen_second(&class, &original_code, ip, lib_path, &dlopen);
 
     let mut file = File::create(&second_payload_path)?;
 
