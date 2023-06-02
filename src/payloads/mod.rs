@@ -1,6 +1,6 @@
 use crate::{
+    os::VirtAddr,
     proc::{ProcClass, ProcSym},
-    VirtAddr,
 };
 
 #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]

@@ -1,4 +1,4 @@
-use crate::{proc::ProcSym, VirtAddr};
+use crate::{os::VirtAddr, proc::ProcSym};
 
 pub(crate) fn gen_first(second_payload_path: &str) -> Vec<u8> {
     use tiny_asm::x86::TinyAsm;

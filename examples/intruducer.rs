@@ -1,4 +1,4 @@
-use intruducer::{Error, intruduce};
+use intruducer::{intruduce, Error};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -18,7 +18,7 @@ fn main() -> Result<(), Error> {
     let opt = Opt::from_args();
 
     intruduce(opt.id, opt.lib_path)?;
-    
+
     println!("Successful intruduction!");
 
     Ok(())

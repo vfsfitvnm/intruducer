@@ -2,19 +2,26 @@
 //! This is a portable rewrite of [dlinject](https://github.com/DavidBuchanan314/dlinject).
 
 use std::fs::File;
-use std::io::{Error as IoError, Write};
+use std::io::Write;
 use std::ops::Not;
 use std::os::unix::prelude::FileExt;
 use std::path::PathBuf;
 
+mod constants;
+mod error;
 mod ext;
+mod os;
 mod payloads;
 mod proc;
 
-use crate::ext::ProcExt;
-use crate::ext::ProcIntruducerExt;
-use crate::proc::Proc;
-use crate::proc::PtraceScope;
+use constants::TMP_DIR;
+pub use error::Error;
+use proc::ProcId;
+
+use ext::ProcExt;
+use ext::ProcIntruducerExt;
+use os::{chown, PtraceScope};
+use proc::Proc;
 
 /// Loads a shared library into the target process.
 ///
@@ -120,81 +127,9 @@ fn _intruduce(proc: Proc, lib_path: PathBuf, second_payload_path: PathBuf) -> Re
 
     let (uid, gid) = proc.owner()?;
 
-    change_owner(second_payload_path, uid, gid).ok_or(Error::InsufficientPriviliges)?;
+    chown(second_payload_path, uid, gid).ok_or(Error::InsufficientPriviliges)?;
 
     file.write_all(&second_payload)?;
 
     Ok(())
 }
-
-// TODO: wait for https://github.com/rust-lang/rust/issues/88989
-fn change_owner(path: &str, uid: Uid, gid: Gid) -> Option<()> {
-    use std::{
-        ffi::CString,
-        os::raw::{c_char, c_int, c_uint},
-    };
-
-    #[link(name = "c")]
-    extern "C" {
-        fn chown(path: *const c_char, uid: c_uint, gid: c_uint) -> c_int;
-    }
-
-    let path = CString::new(path).ok()?;
-
-    if unsafe { chown(path.as_ptr(), uid, gid) } == 0 {
-        Some(())
-    } else {
-        None
-    }
-}
-
-#[cfg(target_os = "linux")]
-const TMP_DIR: &str = "/tmp";
-
-#[cfg(target_os = "android")]
-const TMP_DIR: &str = "/data/local/tmp";
-
-/// The errors may occurr.
-#[derive(Debug)]
-pub enum Error {
-    /// It occurs when the `dlopen` library (`libc-x.xx.so` on Linux, `libdl.so` on Android)
-    /// is not found in the `/proc/<id>/maps` file of the target process. This either means that library has not been loaded - which
-    /// is kind of impossible - or `/proc/<id>/maps` was improperly parsed.
-    LibraryNotFound(String),
-    /// It occurs when `dlopen` symbol name (`__libc_dlopen_mode`/`dlopen` on Linux, `dlopen` on Android)
-    /// was not found in the expected library.
-    SymbolNotFound(Vec<&'static str>),
-    /// It occurs when the instruction pointer of the target process couldn't be retrieved. This either means there's a lack of priviliges,
-    /// `/proc/<id>/syscall` is missing or was improperly parsed, or none of the process thread was blocked when the intruduction
-    /// was attempted.
-    InstructionPointerNotFound,
-    /// It occurs when the target process architecture is not supported.
-    UnsupportedArch,
-    /// It occurs when the target process is not running - e.g. `/proc/<id>` doesn't exist.
-    ProcessNotRunning,
-    /// It occurs when the intruducer process lacks of sufficient priviliges. This typically depends on `/proc/sys/kernel/yama/ptrace_scope`
-    /// value on Linux.
-    InsufficientPriviliges,
-    #[cfg(target_os = "android")]
-    LibraryPathNeeded,
-    /// It occurs when a I/O error occurred.
-    Io(IoError),
-}
-
-impl From<IoError> for Error {
-    fn from(err: IoError) -> Self {
-        Error::Io(err)
-    }
-}
-
-/// A type alias to represent virtual addresses.
-pub(crate) type VirtAddr = u64;
-
-/// A type alias to represent a process identifier.
-pub(crate) type ProcId = u32;
-
-/// A type alias to represent a user identifier.
-pub(crate) type Uid = u32;
-
-/// A type alias to represent a group identifier.
-pub(crate) type Gid = u32;
