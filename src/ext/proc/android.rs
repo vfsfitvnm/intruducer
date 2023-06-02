@@ -1,3 +1,12 @@
+use std::{
+    io::{BufRead, BufReader},
+    path::PathBuf,
+};
+
+use crate::proc::{Proc, ProcClass};
+
+use super::ProcExt;
+
 /// A extension trait for [`Proc`] specific to the Android operative system.
 pub(crate) trait ProcAndroidExt {
     /// Determines the native library directory of the current application, e.g. `/data/app/com.example.application-.../lib/<abi>`.
@@ -41,7 +50,7 @@ impl ProcAndroidExt for Proc {
     }
 
     fn get_app_name(&self) -> Option<String> {
-        use crate::Uid;
+        use crate::os::Uid;
 
         let (uid, _) = self.owner().ok()?;
 
