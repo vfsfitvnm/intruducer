@@ -51,12 +51,12 @@ impl TinyAsm {
 
     /// Encoding of POP: `POP <registers>`.
     pub fn pop<const T: usize>(self, regs: [Reg; T]) -> Self {
-        self.ldmia(Reg::SP, true, regs)
+        self.ldmia(Reg::sp, true, regs)
     }
 
     /// Encoding of PUSH: `PUSH <registers>`.
     pub fn push<const T: usize>(self, regs: [Reg; T]) -> Self {
-        self.stmdb(Reg::SP, true, regs)
+        self.stmdb(Reg::sp, true, regs)
     }
 
     /// Encoding of STMDB: `STMDB <Rn>{!}, <registers>`.

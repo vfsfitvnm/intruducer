@@ -5,32 +5,32 @@ pub(crate) fn gen_first(second_payload_path: &str) -> Vec<u8> {
 
     TinyAsm::new()
         // Push every general purpose register, plus the link register (r14).
-        .push([R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, LR])
+        .push([r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr])
         // Open second payload file.
-        .movw(R7, 5)
-        .adrl(R0, "second_payload_path")
-        .movw(R1, 0)
-        .movw(R2, 0)
+        .movw(r7, 5)
+        .adrl(r0, "second_payload_path")
+        .movw(r1, 0)
+        .movw(r2, 0)
         .svc(0)
         // Second payload file descriptor.
-        .movr(R11, R0)
+        .movr(r11, r0)
         // Map the Second payload file to memory.
-        .movw(R7, 192)
-        .movw(R0, 0)
-        .movw(R1, 512)
-        .movw(R2, 1 | 4)
-        .movw(R3, 2)
-        .movr(R4, R11)
-        .movw(R5, 0)
+        .movw(r7, 192)
+        .movw(r0, 0)
+        .movw(r1, 512)
+        .movw(r2, 1 | 4)
+        .movw(r3, 2)
+        .movr(r4, r11)
+        .movw(r5, 0)
         .svc(0)
         // Second payload code virtual address.
-        .movr(R12, R0)
+        .movr(r12, r0)
         // Close Second payload file.
-        .movw(R7, 6)
-        .movr(R0, R11)
+        .movw(r7, 6)
+        .movr(r0, r11)
         .svc(0)
         // Execute second payload code.
-        .movr(PC, R12)
+        .movr(pc, r12)
         // Data
         .label("second_payload_path")
         .asciiz(second_payload_path)
@@ -48,34 +48,34 @@ pub(crate) fn gen_second(
 
     TinyAsm::new()
         // Open memory file (/proc/self/mem).
-        .movw(R7, 5)
-        .adrl(R0, "mem_path")
-        .movw(R1, 2)
-        .movw(R2, 0)
+        .movw(r7, 5)
+        .adrl(r0, "mem_path")
+        .movw(r1, 2)
+        .movw(r2, 0)
         .svc(0)
         // Memory file descriptor.
-        .movr(R12, R0)
+        .movr(r12, r0)
         // Restore the original code.
-        .movw(R7, 181)
-        .movr(R0, R12)
-        .adrl(R1, "original_code")
-        .movw(R2, original_code.len() as u16)
-        .ldrl(R3, "original_ip")
-        .ldrl(R4, "original_ip")
+        .movw(r7, 181)
+        .movr(r0, r12)
+        .adrl(r1, "original_code")
+        .movw(r2, original_code.len() as u16)
+        .ldrl(r3, "original_ip")
+        .ldrl(r4, "original_ip")
         .svc(0)
         // Close memory file.
-        .movw(R7, 6)
-        .movr(R0, R12)
+        .movw(r7, 6)
+        .movr(r0, r12)
         .svc(0)
         // Call dlopen.
-        .adrl(R0, "lib_path")
-        .movw(R1, 1)
-        .movr(LR, PC)
-        .ldrl(PC, "dlopen_addr")
+        .adrl(r0, "lib_path")
+        .movw(r1, 1)
+        .movr(lr, pc)
+        .ldrl(pc, "dlopen_addr")
         // Pop every previously pushed register
-        .pop([R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, LR])
+        .pop([r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr])
         // Restore the original execution flow
-        .ldrl(PC, "original_ip")
+        .ldrl(pc, "original_ip")
         // Data
         .label("mem_path")
         .asciiz("/proc/self/mem")

@@ -46,7 +46,7 @@ impl TinyAsm {
 
     /// Encoding of MOV (register): `MOV <Xd>, <Xm>`.
     pub fn movr(self, xd: Reg, xm: Reg) -> Self {
-        self.orrsr(xd, Reg::XZR, xm, None)
+        self.orrsr(xd, Reg::xzr, xm, None)
     }
 
     /// Encoding of MOV (wide immediate): `MOV Xd, #<imm>`.

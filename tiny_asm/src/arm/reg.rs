@@ -1,34 +1,35 @@
 use std::ops::{BitOr, Shl};
 
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum Reg {
-    R0 = 0,
-    R1 = 1,
-    R2 = 2,
-    R3 = 3,
-    R4 = 4,
-    R5 = 5,
-    R6 = 6,
-    R7 = 7,
-    R8 = 8,
-    R9 = 9,
-    R10 = 10,
-    R11 = 11,
-    R12 = 12,
-    R13 = 13,
-    R14 = 14,
-    R15 = 15,
-    SP,
-    LR,
-    PC,
+    r0 = 0,
+    r1 = 1,
+    r2 = 2,
+    r3 = 3,
+    r4 = 4,
+    r5 = 5,
+    r6 = 6,
+    r7 = 7,
+    r8 = 8,
+    r9 = 9,
+    r10 = 10,
+    r11 = 11,
+    r12 = 12,
+    r13 = 13,
+    r14 = 14,
+    r15 = 15,
+    sp,
+    lr,
+    pc,
 }
 
 impl Reg {
     const fn val(self) -> u32 {
         match self {
-            Reg::SP => Reg::R13.val(),
-            Reg::LR => Reg::R14.val(),
-            Reg::PC => Reg::R15.val(),
+            Reg::sp => Reg::r13.val(),
+            Reg::lr => Reg::r14.val(),
+            Reg::pc => Reg::r15.val(),
             reg => reg as u32,
         }
     }

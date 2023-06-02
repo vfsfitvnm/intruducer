@@ -22,9 +22,9 @@ impl From<Op> for u32 {
             Op::Addi(rd, rn, imm) => 0xe2800000 | rn << 16 | rd << 12 | imm,
             Op::Adri(rn, imm) => {
                 if imm < 0 {
-                    Op::Subi(rn, Reg::PC, -imm as u32).into()
+                    Op::Subi(rn, Reg::pc, -imm as u32).into()
                 } else {
-                    Op::Addi(rn, Reg::PC, imm as u32).into()
+                    Op::Addi(rn, Reg::pc, imm as u32).into()
                 }
             }
             Op::Ldm(mode, rn, wb, regs) => regs.into_iter().fold(
@@ -66,7 +66,7 @@ impl Encodable<4> for Op {
             Op::Ldrl(rt, label) => Op::Ldri(
                 AddrMode2::Offset,
                 rt,
-                Reg::PC,
+                Reg::pc,
                 Self::res_lab(label, labs, off) as i16,
             ),
             op => op,
