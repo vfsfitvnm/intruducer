@@ -34,7 +34,7 @@ impl Proc {
     /// Returns [`None`] if the path `/proc/<id>` does not exist.
     pub(crate) fn new(id: ProcId) -> Option<Self> {
         let path = PathBuf::root().join("proc").join(id.to_string());
-        path.exists().then(|| Proc(path))
+        path.exists().then_some(Proc(path))
     }
 
     /// Gets the owner of the current [`Proc`].

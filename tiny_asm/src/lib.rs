@@ -31,7 +31,7 @@ pub struct TinyAsm<T: Encodable<U>, const U: usize> {
 impl<T: Encodable<U>, const U: usize> TinyAsm<T, U> {
     /// Creates a new assembler.
     pub fn new() -> Self {
-        TinyAsm {
+        Self {
             buf: Default::default(),
             relocs: Default::default(),
             labels: Default::default(),

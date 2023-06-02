@@ -59,7 +59,7 @@ pub fn intruduce(id: ProcId, lib_path: PathBuf) -> Result<(), Error> {
         // There's nothing we can do about this
         PtraceScope::None => false,
     }
-    .then(|| ())
+    .then_some(())
     .ok_or(Error::InsufficientPriviliges)?;
 
     #[cfg(target_os = "android")]
@@ -123,7 +123,7 @@ fn _intruduce(proc: Proc, lib_path: PathBuf, second_payload_path: PathBuf) -> Re
 
     let second_payload = payloads::gen_second(&class, &original_code, ip, lib_path, &dlopen);
 
-    let mut file = File::create(&second_payload_path)?;
+    let mut file = File::create(second_payload_path)?;
 
     let (uid, gid) = proc.owner()?;
 
